@@ -1,4 +1,3 @@
-```markdown
 # Baseline Validation
 
 ## Objective
