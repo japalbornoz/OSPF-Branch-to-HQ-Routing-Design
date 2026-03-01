@@ -34,7 +34,7 @@ The project simulates an HQ site, a Branch site, an internal transit segment, an
 
 The image below shows the actual Cisco Packet Tracer topology used in this project.
 
-![Project 03 Physical Topology](screenshots/topology-overview.png)
+![Project 03 Physical Topology](images/networktopology03.png)
 
 ---
 
