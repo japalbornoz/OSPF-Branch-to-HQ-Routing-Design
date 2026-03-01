@@ -1,44 +1,88 @@
-# CCNA Project 03 – OSPF Branch-to-HQ Routing Design
+# CCNA Project 03 – Multi-Segment OSPF Routing Design with DR/BDR Election and Default Route Origination
 
 ## Overview
-This project demonstrates a small enterprise routed topology built in Cisco Packet Tracer using 3 routers and single-area OSPF. The lab simulates communication between an HQ site and a Branch site through a central WAN router.
+This project demonstrates a multi-router OSPF design built in Cisco Packet Tracer to study how OSPF behaves across different interface types and network segments.
 
-The main objective was to configure dynamic routing, validate adjacency formation and route learning, verify end-to-end connectivity, and document link failure and recovery behavior in a non-redundant topology.
+The topology was intentionally redesigned beyond a basic 3-router branch-to-HQ lab so I could observe and document:
 
-An optional enhancement was also added by simulating an ISP-facing uplink on the WAN router and originating a default route into OSPF.
+- OSPF over serial point-to-point links
+- OSPF over Ethernet broadcast multiaccess segments
+- DR/BDR election behavior
+- OSPF interface priority effects
+- OSPF simple authentication
+- loopback advertisement
+- passive-interface behavior
+- default route origination from a WAN-edge router
+
+The project simulates an HQ site, a Branch site, an internal transit segment, and a WAN-edge router connected to a simulated ISP.
 
 ---
 
 ## Objectives
-- Build a 3-router branch-to-HQ routed topology
-- Configure LAN and WAN IPv4 addressing
-- Configure single-area OSPF (Area 0)
-- Verify OSPF neighbor adjacencies
-- Verify dynamic route learning between HQ and Branch
-- Validate host-to-host connectivity
-- Perform and document failure and recovery testing
-- Maintain portfolio-ready project documentation
+- Build a multi-segment routed topology in Cisco Packet Tracer
+- Configure single-area OSPF (Area 0) across serial and Ethernet links
+- Compare point-to-point serial OSPF behavior versus Ethernet broadcast OSPF behavior
+- Validate OSPF neighbor formation and route learning
+- Observe DR/BDR election on a shared Ethernet segment
+- Validate OSPF authentication on active transit links
+- Originate a default route from the WAN edge into OSPF
+- Document baseline, failure, and recovery behavior in a portfolio-ready format
 
 ---
 
-## Topology Summary
-The topology uses a simple non-redundant routed design:
+## Physical Topology
 
-PC-HQ --- SW1-HQ --- R1-HQ --- R2-WAN --- R3-BRANCH --- SW2-BRANCH --- PC-BRANCH
+The image below shows the actual Cisco Packet Tracer topology used in this project.
 
-### Device Roles
-- **R1-HQ** – default gateway for the HQ LAN
-- **R2-WAN** – transit/WAN router between HQ and Branch
-- **R3-BRANCH** – default gateway for the Branch LAN
-- **SW1-HQ** – Layer 2 access switch for HQ
-- **SW2-BRANCH** – Layer 2 access switch for Branch
+![Project 03 Physical Topology](screenshots/topology-overview.png)
 
-Because there is no redundancy, a routed WAN link failure causes loss of inter-site connectivity. This makes failure behavior easy to observe and document.
+---
+
+## Logical Topology
+
+The diagram below shows the logical routed design used in this project.
+
+```mermaid
+flowchart LR
+    PCHQ[PC-HQ\n192.168.10.10/24\nGW 192.168.10.1]
+    SWHQ[SW1-HQ\nVLAN 1: 192.168.10.2/24]
+    R1[R1-HQ\nFa0/0: 192.168.10.1/24\nS0/3/0: 10.0.1.1/30\nLo0: 1.1.1.1/32]
+    R2[R2-HQ\nS0/3/0: 10.0.1.2/30\nFa0/0: 10.0.3.1/29\nLo0: 2.2.2.2/32\nOSPF Priority 20]
+    R4[R4-BRANCH\nFa0/0: 10.0.3.2/29\nS0/3/0: 10.0.2.2/30\nLo0: 4.4.4.4/32\nOSPF Priority 0]
+    R5[R5-WAN\nFa0/0: 10.0.3.3/29\nGi0/2/0: 203.0.113.1/30\nLo0: 5.5.5.5/32\nOSPF Priority 30]
+    ISP[ISPR1\nGi0/0: 203.0.113.2/30]
+    R3[R3-BRANCH\nS0/3/0: 10.0.2.1/30\nFa0/0: 192.168.20.1/24\nLo0: 3.3.3.3/32]
+    SWBR[SW2-BRANCH\nVLAN 1: 192.168.20.2/24]
+    PCBR[PC-BRANCH\n192.168.20.10/24\nGW 192.168.20.1]
+    SWT[SW0\nTransit Ethernet Segment\n10.0.3.0/29]
+
+    PCHQ --> SWHQ
+    SWHQ --> R1
+    R1 -->|10.0.1.0/30\nSerial P2P| R2
+    R2 --> SWT
+    R4 --> SWT
+    R5 --> SWT
+    R4 -->|10.0.2.0/30\nSerial P2P| R3
+    R3 --> SWBR
+    SWBR --> PCBR
+    R5 -->|203.0.113.0/30| ISP
+```
+---
+
+## Device Roles
+- R1-HQ – default gateway for the HQ LAN
+- R2-HQ – HQ-side transit router connected to the serial WAN link and shared Ethernet OSPF segment
+- R3-BRANCH – default gateway for the Branch LAN
+- R4-BRANCH – branch-side transit router connected to the branch serial WAN link and shared Ethernet OSPF segment
+- R5-WAN – WAN-edge router connected to the internal Ethernet OSPF segment and simulated ISP
+- ISPR1 – simulated upstream ISP router
+- SW1-HQ – Layer 2 switch for HQ LAN
+- SW2-BRANCH – Layer 2 switch for Branch LAN
+- SW0 – shared Ethernet transit switch for the OSPF broadcast segment
 
 ---
 
 ## IP Addressing Plan
-
 ### HQ LAN
 - Network: `192.168.10.0/24`
 - R1-HQ Fa0/0: `192.168.10.1`
@@ -53,162 +97,183 @@ Because there is no redundancy, a routed WAN link failure causes loss of inter-s
 - PC-BRANCH: `192.168.20.10`
 - Default gateway: `192.168.20.1`
 
-### WAN Links
-- **R1-HQ to R2-WAN**
+### Serial Point-to-Point Links
+- R1-HQ to R2-HQ
   - Network: `10.0.1.0/30`
   - R1-HQ S0/3/0: `10.0.1.1`
-  - R2-WAN S0/3/0: `10.0.1.2`
-
-- **R2-WAN to R3-BRANCH**
+  - R2-HQ S0/3/0: `10.0.1.2`
+- R4-BRANCH to R3-BRANCH
   - Network: `10.0.2.0/30`
-  - R2-WAN S0/3/1: `10.0.2.1`
-  - R3-BRANCH S0/3/1: `10.0.2.2`
+  - R3-BRANCH S0/3/0: `10.0.2.1`
+  - R4-BRANCH S0/3/0: `10.0.2.2`
+
+### Ethernet OSPF Transit Segment
+- Network: `10.0.3.0/29`
+- R2-HQ Fa0/0: `10.0.3.1`
+- R4-BRANCH Fa0/0: `10.0.3.2`
+- R5-WAN Fa0/0: `10.0.3.3`
+
+### ISP Link
+- Network: `203.0.113.0/30`
+- R5-WAN Gi0/2/0: `203.0.113.1`
+- ISPR1 Gi0/0: `203.0.113.2`
 
 ### Loopbacks
 - R1-HQ Lo0: `1.1.1.1/32`
-- R2-WAN Lo0: `2.2.2.2/32`
+- R2-HQ Lo0: `2.2.2.2/32`
 - R3-BRANCH Lo0: `3.3.3.3/32`
-
-Loopbacks were used for stable router IDs and additional OSPF route verification.
+- R4-BRANCH Lo0: `4.4.4.4/32`
+-  R5-WAN Lo0: `5.5.5.5/32`
 
 ---
 
 ## Routing Design
-- Routing protocol: **OSPF**
-- Process ID: **1**
-- Area: **0**
-- Design type: **Single-area OSPF**
-- Redundancy: **None**
+- Routing protocol: OSPF
+- Process ID: 1
+- Area: 0
+- Design type: Single-area OSPF
+- Internal routing domain: Area 0 only
+- External connectivity: default route originated by R5-WAN
 
-### OSPF Implementation Notes
+## OSPF Design Notes
 - LAN-facing interfaces were configured as passive where appropriate
-- WAN serial links were used to form active OSPF adjacencies
-- HQ, Branch, WAN, and loopback routes were exchanged dynamically
+- Loopback interfaces were advertised and used as stable router IDs
+- OSPF authentication was enabled on active transit links
+- Serial links were used to validate point-to-point OSPF behavior
+- Ethernet transit was used to validate broadcast multiaccess OSPF behavior
+- R5-WAN acted as an ASBR and originated the default route into OSPF
 
 ---
 
-## Build Notes
-This project was built in **Cisco Packet Tracer** using:
-- Cisco 2811 routers
-- Cisco 2960 switches
-- serial WAN links
-- FastEthernet LAN connections
+## OSPF Behavior Observed
+### 1. OSPF over Serial Point-to-Point
 
-Since the Cisco 2811 router in Packet Tracer does not provide standard Gigabit LAN interfaces in this topology, FastEthernet interfaces were used for site LAN connections.
+The following links behaved as point-to-point OSPF adjacencies:
+- R1-HQ ↔ R2-HQ
+- R4-BRANCH ↔ R3-BRANCH
+
+Observed behavior:
+- direct FULL adjacency formation
+- no DR/BDR election
+- expected point-to-point route propagation
+
+### 2. OSPF over Ethernet Broadcast Multiaccess
+
+The shared Ethernet segment 10.0.3.0/29 connected:
+- R2-HQ
+- R4-BRANCH
+- R5-WAN
+
+Observed behavior:
+- DR/BDR election occurred
+- multiple neighbors formed on the shared segment
+- route exchange happened through the broadcast network type
+
+### 3. DR/BDR Election Results
+
+Configured priorities:
+- R5-WAN = 30
+- R2-HQ = 20
+- R4-BRANCH = 0
+
+Validated results:
+- R5-WAN = DR
+- R2-HQ = BDR
+- R4-BRANCH = DROTHER
+
+This confirmed that:
+- higher OSPF priority influences election
+- an interface with priority 0 cannot become DR or BDR
+
+### 4. Default Route Origination
+
+R5-WAN was configured with:
+- a static default route toward ISPR1
+- default-information originate under OSPF
+
+Result:
+- internal routers installed O*E2 0.0.0.0/0
+- the default route was successfully propagated across the OSPF domain
+
+### 5. OSPF Authentication
+
+OSPF simple authentication was configured on active transit interfaces.
+
+Result:
+- adjacencies formed successfully only when authentication settings matched
+- this reinforced the dependency between OSPF control-plane formation and matching interface security settings
 
 ---
 
-## Baseline Validation
-
+## Baseline Validation Summary
 ### Interface Status
-Verified that all required active interfaces were operational:
 
-- **R1-HQ**
-  - Fa0/0 = up/up
-  - S0/3/0 = up/up
+Validated that all required active interfaces were operational:
+- HQ LAN interfaces up/up
+- Branch LAN interfaces up/up
+- serial transit links up/up
+- Ethernet OSPF segment interfaces up/up
+- WAN-edge ISP-facing interface up/up
 
-- **R2-WAN**
-  - S0/3/0 = up/up
-  - S0/3/1 = up/up
+### Neighbor Status
 
-- **R3-BRANCH**
-  - Fa0/0 = up/up
-  - S0/3/1 = up/up
+Validated:
+- R1-HQ formed FULL adjacency with R2-HQ
+- R3-BRANCH formed FULL adjacency with R4-BRANCH
+- R2-HQ, R4-BRANCH, and R5-WAN formed expected adjacencies on the Ethernet segment
 
-### OSPF Neighbor Validation
-Verified full OSPF adjacency formation:
+### Route Learning
 
-- R1-HQ formed adjacency with R2-WAN
-- R2-WAN formed adjacency with R1-HQ and R3-BRANCH
-- R3-BRANCH formed adjacency with R2-WAN
+Validated:
+- HQ LAN and Branch LAN were learned dynamically through OSPF
+- loopbacks were learned across the topology
+- internal routers learned the external default route from R5-WAN
 
-### Routing Table Validation
-Verified OSPF route learning:
+### End-to-End Connectivity
 
-- R1-HQ learned Branch routes through R2-WAN
-- R3-BRANCH learned HQ routes through R2-WAN
-- R2-WAN learned both site LANs
-- Loopback routes were also learned through OSPF
-
-### End-to-End Connectivity Validation
-Validated successful:
+Validated:
 - PC-to-default-gateway reachability
-- HQ-to-Branch host reachability
+-HQ-to-Branch host reachability
 - Branch-to-HQ host reachability
-
-Baseline OSPF routing was successfully established and verified.
-
----
-
-## Optional Enhancement – ISP Simulation and Default Route Origination
-
-A simulated ISP-facing uplink was added on R2-WAN as an optional enhancement beyond the original project scope.
-
-### ISP Link
-- R2-WAN Gi0/2/0: `203.0.113.1/30`
-
-### Default Route Configuration
-R2-WAN was configured with:
-- a static default route toward the simulated ISP
-- `default-information originate` under OSPF
-
-### Validation
-- R2-WAN generated a Type-5 external LSA for `0.0.0.0/0`
-- downstream routers received the external LSA
-- after resetting the OSPF process in Packet Tracer, R3-BRANCH installed:
-  - `O*E2 0.0.0.0/0 via 10.0.2.1`
-
-### Lab Note
-During testing, Packet Tracer did not immediately install the external default route on the downstream router even though the Type-5 LSA was already present in the OSPF database. Resetting the OSPF process refreshed the routing state and the default route was then installed correctly.
-
-This behavior appears to be related to Packet Tracer process/state handling rather than an OSPF design issue.
+- default route installation on internal routers
 
 ---
 
-## Failure Testing Plan
+### Failure Testing Scope
 This project includes the following failure and recovery scenarios:
 
-1. **Failure Test 1** – R1-HQ to R2-WAN serial link failure
-2. **Failure Test 2** – R2-WAN to R3-BRANCH serial link failure
-3. **Recovery Test 1** – restore R1-HQ to R2-WAN link
-4. **Recovery Test 2** – restore R2-WAN to R3-BRANCH link
+- Failure Test 1 – R1-HQ to R2-HQ serial link down
+- Recovery Test 1 – restore R1-HQ to R2-HQ serial link
+- Failure Test 2 – R4-BRANCH to R3-BRANCH serial link down
+- Recovery Test 2 – restore R4-BRANCH to R3-BRANCH serial link
+- Failure Test 3 – R5-WAN Ethernet uplink to internal OSPF segment down
+- Recovery Test 3 – restore R5-WAN Ethernet uplink
 
-Because the topology is non-redundant, failure of either routed WAN link causes loss of inter-site connectivity.
-
----
-
-## What I Learned
-- How to build and validate a 3-router single-area OSPF topology
-- How to verify adjacencies, learned routes, and end-to-end connectivity
-- How routed WAN failures affect OSPF neighbors and reachability
-- How to document baseline, failure, and recovery behavior in a structured way
-- How OSPF default-route origination works
-- How to distinguish between routing design issues and Packet Tracer quirks
+These tests allow observation of:
+- site isolation due to point-to-point serial failure
+- route withdrawal and neighbor loss
+- loss and restoration of default-route origination from the WAN edge
+- internal versus external reachability differences
 
 ---
 
-## Interview-Ready Summary
-I built a 3-router branch-to-HQ routing lab in Cisco Packet Tracer using single-area OSPF. I configured LAN and WAN addressing, validated OSPF neighbor formation and dynamic route learning, verified end-to-end host communication, and documented baseline, failure, and recovery behavior. I also extended the lab by simulating an ISP uplink and testing OSPF default-route origination.
+## Lessons learned
 
----
+- How OSPF behaves differently on serial point-to-point links versus Ethernet multiaccess segments
+- That point-to-point serial OSPF links form direct adjacencies without DR/BDR election
+- That Ethernet broadcast OSPF segments elect a Designated Router (DR) and Backup Designated Router (BDR)
+- How `ip ospf priority` affects DR/BDR election outcomes
+- That an interface with `ip ospf priority 0` can still form adjacency but will never be elected DR or BDR
+- How loopback interfaces can be used for stable router IDs and additional route validation
+- How passive interfaces allow route advertisement without forming unnecessary OSPF adjacencies on user-facing LANs
+- How OSPF simple authentication must match on both ends of participating interfaces for adjacencies to form
+- How a static default route can be injected into OSPF with `default-information originate`
+- How to validate OSPF using interface state, neighbor state, routing tables, and default-route entries
+- How to distinguish internal routing continuity from WAN-edge default-route dependency
 
 ## Tools Used
 - Cisco Packet Tracer
 - Cisco IOS CLI
 - Markdown documentation
-- CLI validation commands
-- Screenshot-based evidence capture
-
----
-
-## Project Status
-- [x] Topology built
-- [x] LAN and WAN addressing configured
-- [x] OSPF configured
-- [x] Baseline validation completed
-- [x] End-to-end connectivity verified
-- [x] Optional ISP/default-route enhancement tested
-- [ ] Failure Test 1 completed
-- [ ] Failure Test 2 completed
-- [ ] Recovery documentation completed
-- [ ] Final screenshot set completed
+- Screenshot-based validation
+- Mermaid.js logical topology diagram
