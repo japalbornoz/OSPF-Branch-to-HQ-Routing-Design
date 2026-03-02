@@ -54,3 +54,12 @@ end
 
 ## Conclusion
 Recovery Test 1 behaved as expected. Restoring the HQ serial link allowed OSPF to re-establish adjacency, repopulate the routing table, restore the external default route, and recover end-to-end connectivity between HQ and Branch.
+
+---
+
+## Evidence (Screenshots)
+- ![Recovery Test 1 - Neighbor Restored](../screenshots/recovery-test-1-neighbor-restored.png)
+  
+- ![Recovery Test 1 - Routes Restored](../screenshots/recovery-test-1-routes-restored.png)
+
+- ![Recovery Test 1 - PC-HQ to PC-BRANCH Ping Success](../screenshots/recovery-test-1-pc-hq-to-pc-branch-success.png)
