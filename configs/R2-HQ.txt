@@ -1,0 +1,111 @@
+R2-HQ#sh run
+Building configuration...
+
+Current configuration : 1280 bytes
+!
+version 15.1
+no service timestamps log datetime msec
+no service timestamps debug datetime msec
+no service password-encryption
+!
+hostname R2-HQ
+!
+!
+!
+!
+!
+!
+!
+!
+no ip cef
+no ipv6 cef
+!
+!
+!
+!
+license udi pid CISCO2811/K9 sn FTX1017GJ6Y-
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain-lookup
+!
+!
+spanning-tree mode pvst
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 2.2.2.2 255.255.255.255
+!
+interface FastEthernet0/0
+ description TO_OSPF_ETHERNET_SEGMENT
+ ip address 10.0.3.1 255.255.255.248
+ ip ospf authentication
+ ip ospf authentication-key ccna
+ ip ospf priority 20
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ shutdown
+!
+interface GigabitEthernet0/2/0
+ no ip address
+ shutdown
+!
+interface Serial0/3/0
+ description TO_R1-HQ
+ ip address 10.0.1.2 255.255.255.252
+ ip ospf authentication
+ ip ospf authentication-key ccna
+ clock rate 64000
+!
+interface Serial0/3/1
+ no ip address
+ clock rate 2000000
+ shutdown
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+router ospf 1
+ router-id 2.2.2.2
+ log-adjacency-changes
+ passive-interface Loopback0
+ network 2.2.2.2 0.0.0.0 area 0
+ network 10.0.3.0 0.0.0.7 area 0
+ network 10.0.1.0 0.0.0.3 area 0
+!
+ip classless
+!
+ip flow-export version 9
+!
+!
+!
+!
+!
+!
+!
+line con 0
+!
+line aux 0
+!
+line vty 0 4
+ login
+!
+!
+!
+end
