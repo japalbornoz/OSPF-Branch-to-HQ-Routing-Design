@@ -67,6 +67,5 @@ Re-enabling the serial link between R4-BRANCH and R3-BRANCH restored the branch-
 
 ## Evidence (Screenshots)
 - ![Recovery Test 2 - Link Restored](../screenshots/recovery-test-2-link-restored.png)
-- ![Recovery Test 2 - R3 Neighbor Restored](../screenshots/recovery-test-2-r3-neighbor-restored.png)
-- ![Recovery Test 2 - R3 Routes Restored](../screenshots/recovery-test-2-r3-routes-restored.png)
+- ![Recovery Test 2 - R3 Neighbor Restored](../screenshots/recovery-test-2-r3-neighbor-and-routes-restored.png)
 - ![Recovery Test 2 - PC-BRANCH to PC-HQ Ping Success](../screenshots/recovery-test-2-pc-branch-to-pc-hq-success.png)
