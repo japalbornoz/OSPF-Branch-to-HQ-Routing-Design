@@ -34,7 +34,7 @@ The project simulates an HQ site, a Branch site, an internal transit segment, an
 
 The image below shows the actual Cisco Packet Tracer topology used in this project, including the HQ LAN, Branch LAN, shared Ethernet OSPF transit segment, WAN-edge router, and simulated ISP connection.
 
-![Project 03 Physical Topology](images/networktopology03.png)
+![Project 03 Physical Topology](screenshots/networktopology03.png)
 
 ---
 
