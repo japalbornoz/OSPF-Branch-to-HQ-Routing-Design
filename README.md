@@ -32,7 +32,7 @@ The project simulates an HQ site, a Branch site, an internal transit segment, an
 
 ## Physical Topology
 
-The image below shows the actual Cisco Packet Tracer topology used in this project.
+The image below shows the actual Cisco Packet Tracer topology used in this project, including the HQ LAN, Branch LAN, shared Ethernet OSPF transit segment, WAN-edge router, and simulated ISP connection.
 
 ![Project 03 Physical Topology](images/networktopology03.png)
 
@@ -223,7 +223,7 @@ Validated:
 
 Validated:
 - PC-to-default-gateway reachability
--HQ-to-Branch host reachability
+- HQ-to-Branch host reachability
 - Branch-to-HQ host reachability
 - default route installation on internal routers
 
@@ -247,7 +247,7 @@ These tests allow observation of:
 
 ---
 
-## Lessons learned
+## What I Learned
 
 - How OSPF behaves differently on serial point-to-point links versus Ethernet multiaccess segments
 - That point-to-point serial OSPF links form direct adjacencies without DR/BDR election
@@ -261,9 +261,36 @@ These tests allow observation of:
 - How to validate OSPF using interface state, neighbor state, routing tables, and default-route entries
 - How to distinguish internal routing continuity from WAN-edge default-route dependency
 
+---
+
+## Interview-Ready Summary
+
+I built a multi-router single-area OSPF lab in Cisco Packet Tracer to compare OSPF behavior across serial point-to-point links and Ethernet broadcast segments. I validated direct adjacencies on serial links, DR/BDR election on a shared Ethernet segment using interface priorities, configured OSPF authentication, advertised loopbacks, and originated a default route from a WAN-edge router into Area 0. I then documented baseline, failure, and recovery behavior to show how routing changed during link loss and restoration.
+
+---
+
 ## Tools Used
 - Cisco Packet Tracer
 - Cisco IOS CLI
 - Markdown documentation
 - Screenshot-based validation
 - Mermaid.js logical topology diagram
+
+---
+
+## Project Status
+- [x] Topology redesigned and built
+- [x] OSPF configured across serial and Ethernet segments
+- [x] OSPF authentication configured
+- [x] DR/BDR election validated
+- [x] Default route origination validated
+- [x] Baseline validation completed
+- [ ] Failure Test 1 completed
+- [ ] Recovery Test 1 completed
+- [ ] Failure Test 2 completed
+- [ ] Recovery Test 2 completed
+- [ ] Failure Test 3 completed
+- [ ] Recovery Test 3 completed
+- [ ] Final screenshot set completed
+
+
