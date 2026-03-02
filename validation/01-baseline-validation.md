@@ -183,4 +183,4 @@ The baseline topology supported normal routed communication between both sites.
 ## Baseline Result
 Baseline validation passed successfully.
 
-The redesigned Project 03 topology operated as intended across both point-to-point serial links and the Ethernet broadcast segment. OSPF neighbors formed correctly, DR/BDR election matched design expectations, routes were learned dynamically, the default route was originated successfully from the WAN edge, and end-to-end communication between HQ and Branch was confirmed.
+The Project 03 topology operated as intended across both point-to-point serial links and the Ethernet broadcast segment. OSPF neighbors formed correctly, DR/BDR election matched design expectations, routes were learned dynamically, the default route was originated successfully from the WAN edge, and end-to-end communication between HQ and Branch was confirmed.
