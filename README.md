@@ -305,12 +305,11 @@ I built a multi-router single-area OSPF lab in Cisco Packet Tracer to compare OS
 - [x] DR/BDR election validated
 - [x] Default route origination validated
 - [x] Baseline validation completed
-- [ ] Failure Test 1 completed
-- [ ] Recovery Test 1 completed
-- [ ] Failure Test 2 completed
-- [ ] Recovery Test 2 completed
-- [ ] Failure Test 3 completed
-- [ ] Recovery Test 3 completed
-- [ ] Final screenshot set completed
-
+- [x] Failure Test 1 completed
+- [x] Recovery Test 1 completed
+- [x] Failure Test 2 completed
+- [x] Recovery Test 2 completed
+- [x] Failure Test 3 completed
+- [x] Recovery Test 3 completed
+- [x] Final screenshot set completed
 
