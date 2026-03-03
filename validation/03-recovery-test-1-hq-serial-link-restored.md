@@ -43,8 +43,9 @@ end
 
 ## Actual Result
 - R1-HQ re-formed an OSPF neighbor adjacency with R2-HQ on Serial0/3/0 (FULL state).
+  
 - OSPF-learned routes returned on R1-HQ, including:
-  -Branch LAN `192.168.20.0/24`
+  - Branch LAN `192.168.20.0/24`
   - transit networks `10.0.2.0/30` and `10.0.3.0/29`
   - remote loopbacks
   - external default route `O*E2 0.0.0.0/0`
