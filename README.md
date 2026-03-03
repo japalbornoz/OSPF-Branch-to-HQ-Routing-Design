@@ -249,7 +249,7 @@ Validated:
 
 ---
 
-### Failure Testing Scope
+## Failure Testing Scope
 This project includes the following failure and recovery scenarios:
 
 - Failure Test 1 – R1-HQ to R2-HQ serial link down
